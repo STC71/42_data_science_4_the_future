@@ -125,4 +125,4 @@ python3 variances.py
 
 ---
 
-*Module 4 – EX02 – Guía Python · sternero – 42 Málaga – 2026*
+*Module 4 – EX02 – Guía Python · sternero – 42 Málaga – Octubre 2026*

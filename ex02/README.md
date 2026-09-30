@@ -57,4 +57,4 @@ Salida: listas `Variances (Percentage)` / `Cumulative…` y `variances.png`.
 
 ---
 
-*Module 4 – EX02 – sternero – 42 Málaga – 2026*
+*Module 4 – EX02 – sternero – 42 Málaga – Octubre 2026*
