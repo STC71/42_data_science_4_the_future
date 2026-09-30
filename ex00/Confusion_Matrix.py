@@ -170,7 +170,8 @@ def display_matrix(matrix: list[list[int]], out: Path | None = None) -> None:
     if out is None:
         out = Path(__file__).resolve().parent / "confusion_matrix.png"
     fig.savefig(out, dpi=140, bbox_inches="tight", pad_inches=0.15, facecolor="white")
-    plt.show()
+    if matplotlib.get_backend().lower() != "agg":
+        plt.show()
     plt.close(fig)
     print(f"→ Gráfico: {out}")
 
