@@ -134,7 +134,8 @@ def plot_heatmap(corr: pd.DataFrame, out: Path) -> None:
     cbar.set_label("Pearson r", fontsize=9)
 
     fig.savefig(out, dpi=140, bbox_inches="tight", pad_inches=0.2, facecolor="white")
-    plt.show()
+    if matplotlib.get_backend().lower() != "agg":
+        plt.show()
     plt.close(fig)
 
 
