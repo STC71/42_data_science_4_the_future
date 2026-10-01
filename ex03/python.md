@@ -136,4 +136,4 @@ python3 Feature_Selection.py
 
 ---
 
-*Module 4 – EX03 – Guía Python · sternero – 42 Málaga – 2026*
+*Module 4 – EX03 – Guía Python · sternero – 42 Málaga – Octubre 2026*
