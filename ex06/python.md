@@ -113,4 +113,4 @@ python3 democracy.py ../data/Train_knight.csv ../data/Test_knight.csv
 
 ---
 
-*Module 4 – EX06 – Guía Python · sternero – 42 Málaga – 2026*
+*Module 4 – EX06 – Guía Python · sternero – 42 Málaga – Octubre 2026*
