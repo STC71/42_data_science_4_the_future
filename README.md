@@ -176,6 +176,32 @@ Guía didáctica de las **cuentas** del Module 4, con fórmulas, ejemplos y anal
 | Monorepo piscine | [42_piscine_pedago_data_science](https://github.com/STC71/42_piscine_pedago_data_science) |
 | Módulo 3 | [The present](https://github.com/STC71/42_data_science_3_the_present) |
 
+
+---
+
+## 🐍 Python del módulo (`python.md`)
+
+Guía del **lenguaje** usado en Module 4 (scripts, `sys.argv`, funciones, ficheros, matplotlib, scikit-learn en una frase), con analogías sencillas y mapa por ejercicio.
+
+No sustituye los `ex0N/python.md` (ahí está el detalle de **cada** entrega).
+
+📖 **[python.md](./python.md)**
+
+---
+
+## 🐼 pandas del módulo (`pandas.md`)
+
+Guía de **tablas CSV** en este módulo: DataFrame, `read_csv`, separar `X` / `y`, train vs test, correlación, errores típicos y mini-recetas por ejercicio.
+
+📖 **[pandas.md](./pandas.md)**
+
+### Guías educativas (raíz del módulo)
+
+- [🐍 python.md](./python.md)
+- [🐼 pandas.md](./pandas.md)
+- [📐 mates.md](./mates.md)
+- [🧪 evaluation.sh](./evaluation.sh)
+
 ---
 
 *Module 4 – The future · sternero – 42 Málaga – Octubre 2026*
