@@ -1,8 +1,10 @@
 # 📐 Matemáticas del Module 4 – The future
 
 <p align="center">
-  <img src="./imgs/banner_00.jpg" alt="Piscine Data Science – Module 4 – Matemáticas" width="100%">
+  <img src="./imgs/banner_mates.jpg" alt="Piscine Data Science – Module 4 – Matemáticas" width="100%">
 </p>
+
+[← Volver al README del módulo](./README.md)
 
 Documento **didáctico**: no sustituye al subject ni a los scripts (`Confusion_Matrix.*`, `Tree.*`, …).  
 Sirve para entender **con calma** las cuentas detrás de cada ejercicio, **sin dar por sentado** que ya sabes estadística o machine learning.
