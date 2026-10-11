@@ -98,6 +98,57 @@ cd ../ex06 && python3 democracy.py ../data/Train_knight.csv ../data/Test_knight.
 
 ---
 
+
+
+---
+
+## 🧪 Evaluación guiada (`evaluation.sh`)
+
+Guía interactiva alineada con **`en.subject.pdf`** y **`evaluation_en_4.pdf`**
+(`/PROJECTS/DATA-SCIENCE-4`). **No** sustituye la defensa oficial ni forma parte de la nota.
+
+```bash
+cd data_science_4_the_future
+chmod +x evaluation.sh
+./evaluation.sh
+```
+
+Recorre, con confirmación y opción auto/manual/saltar:
+
+| Bloque hoja | Qué comprueba la guía |
+|-------------|------------------------|
+| **EX00** Confusion Matrix | Cálculos manuales, 2 ejecuciones, matriz + métricas (**crítico**: si falla → 0) |
+| **EX00 sorpresa** | Precision, Recall, F1, Accuracy + TP/TN/FP/FN |
+| **EX01** Heatmap | Gráfico + explicación de colores claros/oscuros |
+| **EX02** Variances | Curva acumulada + explicación |
+| **EX03** Feature Selection | VIF mostrado, explicado, features con VIF **< 5** |
+| **EX04** Forest | Árbol, `Tree.txt`/`Tree.csv`, f1 **≥ 90 %** vs Truth_Knight |
+| **EX05** KNN | Gráfico k, `KNN.txt`/`KNN.csv`, f1 **≥ 92 %** |
+| **EX05 sorpresa** | Qué es convergencia y cuándo puede fallar |
+| **EX06** democracy | Voting, `Voting.txt`/`Voting.csv`, f1 **≥ 94 %** |
+
+Busca CSV/TXT en `data/` y en `ex0N/`. Matplotlib usa caché en goinfre cuando hace falta (cuota en 42).
+
+---
+
+## 📐 Matemáticas del módulo (`mates.md`)
+
+Guía didáctica de las **cuentas** del Module 4, con fórmulas, ejemplos y analogías, sin asumir ML previo.
+
+| Tema | Ejercicios |
+|------|------------|
+| Matriz de confusión, TP/TN/FP/FN | EX00 |
+| Precision, Recall, F1, Accuracy | EX00 (+ sorpresa) |
+| Heatmap / Pearson | EX01 |
+| Varianza explicada y curva al 90 % | EX02 |
+| VIF y multicolinealidad | EX03 |
+| Árbol / bosque | EX04 |
+| KNN, k y convergencia | EX05 |
+| Voting ensemble | EX06 |
+
+📖 **[mates.md](./mates.md)** — material de apoyo. **No** sustituye al subject ni a `Confusion_Matrix.*` … `democracy.*`.
+
+
 ## 🎤 Defensa global
 
 | Pregunta típica | Idea de respuesta |
