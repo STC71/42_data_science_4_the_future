@@ -1,7 +1,7 @@
 # 🐼 pandas en el Module 4 – The future
 
 <p align="center">
-  <img src="./imgs/banner_00.jpg" alt="Piscine Data Science – Module 4 – Guía pandas" width="100%">
+  <img src="./imgs/banner_pandas.jpg" alt="Piscine Data Science – Module 4 – Guía pandas" width="100%">
 </p>
 
 Guía **didáctica de pandas** centrada en lo que realmente usas en este módulo.  

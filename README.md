@@ -1,7 +1,5 @@
-# 🚀 Module 4 – The future
-
 <p align="center">
-  <img src="./imgs/banner_00.jpg" alt="Piscine Data Science – Module 4 – The future" width="100%">
+  <img src="./imgs/banner_00.jpg" alt="Piscine Data Science – 🚀 Module 4 – The future" width="100%">
 </p>
 
 <div align="center">
