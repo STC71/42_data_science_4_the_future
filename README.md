@@ -10,6 +10,8 @@
 
 **Piscine Pedago Data Science – 42** · Predecir el bando de los caballeros (**Jedi** / **Sith**)
 
+Stack didáctico en raíz: `python.md` · `pandas.md` · `numpy.md` · `matplotlib.md` · `scikit-learn.md` · `mates.md`
+
 [Ejercicios](#-ejercicios) · [Datos](#-datos) · [Flujo](#-flujo-del-módulo) · [Cómo ejecutar](#-cómo-ejecutar) · [Defensa](#-defensa-global)
 
 </div>
@@ -171,6 +173,10 @@ Guía didáctica de las **cuentas** del Module 4, con fórmulas, ejemplos y anal
 | EX04 | [Tree](ex04/README.md) |
 | EX05 | [KNN](ex05/README.md) |
 | EX06 | [democracy](ex06/README.md) |
+| Guías Python / pandas | [python.md](./python.md) · [pandas.md](./pandas.md) |
+| Guías NumPy / matplotlib / sklearn | [numpy.md](./numpy.md) · [matplotlib.md](./matplotlib.md) · [scikit-learn.md](./scikit-learn.md) |
+| Matemáticas | [mates.md](./mates.md) |
+| Defensa guiada | [evaluation.sh](./evaluation.sh) |
 | Monorepo piscine | [42_piscine_pedago_data_science](https://github.com/STC71/42_piscine_pedago_data_science) |
 | Módulo 3 | [The present](https://github.com/STC71/42_data_science_3_the_present) |
 
@@ -193,10 +199,44 @@ Guía de **tablas CSV** en este módulo: DataFrame, `read_csv`, separar `X` / `y
 
 📖 **[pandas.md](./pandas.md)**
 
+
+---
+
+## 🤖 scikit-learn del módulo (`scikit-learn.md`)
+
+Guía **desde cero** de scikit-learn orientada al cierre de la piscine: patrón `fit` / `predict` / `transform`,
+`StandardScaler`, **Decision Tree** (EX04), **KNN** y curva de k (EX05), **VotingClassifier** (EX06),
+`Pipeline`, métricas `f1` / `classification_report`, umbrales 90/92/94 %, reproducibilidad y frases de defensa.
+
+**Importante:** en EX00 las métricas se calculan **a mano**; sklearn no sustituye ese requisito de la hoja.
+
+📖 **[scikit-learn.md](./scikit-learn.md)** — material de apoyo. **No** sustituye a `en.subject.pdf` ni a `Tree.*` / `KNN.*` / `democracy.*`.
+
+---
+
+## 🔢 NumPy del módulo (`numpy.md`)
+
+Guía **desde cero** de NumPy: arrays, `shape`, `axis`, paso desde pandas, varianza/correlación y soporte de VIF.
+
+📖 **[numpy.md](./numpy.md)** — material de apoyo. **No** sustituye a `en.subject.pdf` ni a los entregables.
+
+---
+
+## 📈 Matplotlib del módulo (`matplotlib.md`)
+
+Guía **desde cero** de matplotlib para Module 4: heatmap, curva de varianza ≥ 90 %, `plot_tree`, curva de k,
+matriz de confusión visual, backend Agg/PNG en 42 y cómo comentar cada figura en evaluación.
+
+📖 **[matplotlib.md](./matplotlib.md)** — material de apoyo. **No** sustituye a `en.subject.pdf` ni a los entregables.
+
+
 ### Guías educativas (raíz del módulo)
 
 - [🐍 python.md](./python.md)
 - [🐼 pandas.md](./pandas.md)
+- [🔢 numpy.md](./numpy.md)
+- [📈 matplotlib.md](./matplotlib.md)
+- [🤖 scikit-learn.md](./scikit-learn.md)
 - [📐 mates.md](./mates.md)
 - [🧪 evaluation.sh](./evaluation.sh)
 

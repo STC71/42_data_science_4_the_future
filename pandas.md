@@ -4,6 +4,8 @@
   <img src="./imgs/banner_pandas.jpg" alt="Piscine Data Science – Module 4 – Guía pandas" width="100%">
 </p>
 
+[← README](./README.md) · [🐍 python.md](./python.md) · [🔢 numpy.md](./numpy.md) · [📈 matplotlib.md](./matplotlib.md) · [🤖 scikit-learn.md](./scikit-learn.md) · [📐 mates.md](./mates.md)
+
 Guía **didáctica de pandas** centrada en lo que realmente usas en este módulo.  
 No sustituye al subject ni a los scripts.  
 Para el lenguaje general de Python: [`python.md`](./python.md). Para las fórmulas: [`mates.md`](./mates.md).
@@ -370,6 +372,9 @@ pred = model.predict(X_test)
 | Recurso | Contenido |
 |---------|-----------|
 | [`python.md`](./python.md) | Lenguaje, `argv`, fit/predict |
+| [`numpy.md`](./numpy.md) | Arrays desde DataFrame |
+| [`matplotlib.md`](./matplotlib.md) | Heatmap y curvas |
+| [`scikit-learn.md`](./scikit-learn.md) | Modelos sobre X/y |
 | [`mates.md`](./mates.md) | F1, VIF, varianza, voting |
 | [`evaluation.sh`](./evaluation.sh) | Defensa guiada |
 | `ex0N/python.md` | Detalle del código de cada ejercicio |

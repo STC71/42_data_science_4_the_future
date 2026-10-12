@@ -4,6 +4,8 @@
   <img src="./imgs/banner_python.jpg" alt="Piscine Data Science – Module 4 – Guía Python" width="100%">
 </p>
 
+[← README](./README.md) · [🐼 pandas.md](./pandas.md) · [🔢 numpy.md](./numpy.md) · [📈 matplotlib.md](./matplotlib.md) · [🤖 scikit-learn.md](./scikit-learn.md) · [📐 mates.md](./mates.md)
+
 Guía **didáctica de Python** para este módulo.  
 No sustituye al subject ni a los scripts (`Confusion_Matrix.*`, `Tree.*`, …).  
 Tampoco sustituye el `python.md` de cada `ex0N/` (ahí se detalla **ese** ejercicio).
@@ -442,6 +444,9 @@ para no llenar `~/.cache`.
 | Recurso | Contenido |
 |---------|-----------|
 | [`pandas.md`](./pandas.md) | Tablas CSV, columnas, train/test |
+| [`numpy.md`](./numpy.md) | Arrays y matrices |
+| [`matplotlib.md`](./matplotlib.md) | Heatmap, curva k, árbol |
+| [`scikit-learn.md`](./scikit-learn.md) | Tree, KNN, Voting, Scaler |
 | [`mates.md`](./mates.md) | Fórmulas (F1, VIF, …) |
 | [`evaluation.sh`](./evaluation.sh) | Defensa paso a paso |
 | `ex0N/python.md` | Guía **del ejercicio** concreto |
