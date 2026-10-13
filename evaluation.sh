@@ -41,6 +41,7 @@ WARN_COUNT=0
 LAST_KIND="info"
 LAST_TEXT="Evaluación iniciada"
 STOP_HARD=0   # EX00 fallido → la hoja para aquí
+readonly MAX_OUTPUT_LINES=24
 
 # ============================================================================
 # SALIDA
@@ -97,6 +98,108 @@ ctx()   { echo -e "  ${DIM}$1${RESET}"; }
 ctx_blank() { echo; }
 requirement() { echo -e "    ${BLUE}▸ Criterio (hoja de evaluación):${RESET} $1"; }
 show_cmd() { echo -e "    ${DIM}\$${RESET} ${BOLD}$1${RESET}"; }
+
+show_output() {
+  local label="$1"
+  local output="$2"
+  local -a lines
+  local count head_count tail_count omitted i
+
+  mapfile -t lines <<< "$output"
+  count="${#lines[@]}"
+  subsection "$label"
+
+  if [[ "$count" -le "$MAX_OUTPUT_LINES" ]]; then
+    printf '    %s\n' "${lines[@]}"
+    return
+  fi
+
+  head_count=12
+  tail_count=8
+  omitted=$((count - head_count - tail_count))
+  for ((i = 0; i < head_count; i++)); do
+    printf '    %s\n' "${lines[i]}"
+  done
+  note "Se han omitido $omitted líneas intermedias para facilitar la lectura."
+  note "La salida completa sigue disponible ejecutando manualmente el comando mostrado."
+  for ((i = count - tail_count; i < count; i++)); do
+    printf '    %s\n' "${lines[i]}"
+  done
+}
+
+show_pngs() {
+  local dir="$1"
+  local found=0
+  while IFS= read -r png; do
+    found=1
+    ok "PNG generado: ${png#"$SCRIPT_DIR"/}"
+    show_cmd "xdg-open \"$png\""
+  done < <(find "$SCRIPT_DIR/$dir" -maxdepth 1 -type f -name '*.png' -print 2>/dev/null | sort)
+  if [[ "$found" -eq 0 ]]; then
+    if [[ "$dir" == "ex03" || "$dir" == "ex06" ]]; then
+      note "$dir no genera PNG: el subject pide una salida textual en terminal"
+    else
+      warn "No se ha encontrado el PNG esperado en $dir/"
+    fi
+  fi
+}
+
+explain_output() {
+  local dir="$1"
+  subsection "Qué estamos viendo y cómo interpretarlo"
+  case "$dir" in
+    ex00)
+      ctx "En concreto, según los datos utilizados, el resultado muestra cuántos Jedi y Sith se acertaron o confundieron."
+      ctx "La matriz cruza la clase real (filas) con la clase predicha (columnas): la diagonal son aciertos."
+      ctx "Lo que explica: precision mide la confianza de cada predicción; recall, cuánto de cada clase encontramos; F1 combina ambas."
+      ctx "Es algo así como corregir un examen: la diagonal son respuestas correctas y las casillas exteriores son errores de identificación."
+      ;;
+    ex01)
+      ctx "En concreto, el heatmap generado muestra qué skills tienden a variar juntas en los datos de Train_knight."
+      ctx "Lo que explica: cada casilla es una correlación de Pearson; cerca de +1 van juntas, cerca de −1 van en sentidos opuestos."
+      ctx "El color no es una clase: representa la intensidad y el signo de la relación lineal."
+      ctx "Es algo así como un mapa de tráfico: el color permite localizar rápidamente dónde hay una relación fuerte o débil."
+      ;;
+    ex02)
+      ctx "En concreto, la curva generada muestra cómo se acumula la información de las skills al añadir componentes."
+      ctx "Lo que explica: el eje X indica cuántos componentes conservamos y el eje Y qué porcentaje de variabilidad representan."
+      ctx "La línea del 90 % ayuda a decidir cuántos componentes hacen falta sin conservar dimensiones innecesarias."
+      ctx "Es algo así como resumir un libro: buscamos leer menos páginas sin perder la idea principal."
+      ;;
+    ex03)
+      ctx "En concreto, EX03 no genera un PNG: la salida obtenida es una tabla VIF mostrada en la terminal."
+      ctx "Lo que explica: VIF alto indica que una feature repite información que ya aportan otras."
+      ctx "El filtrado intenta conservar features con VIF < 5 para reducir la multicolinealidad."
+      ctx "Es algo así como quitar titulares repetidos de un periódico: dejamos la información útil sin contar lo mismo varias veces."
+      ;;
+    ex04)
+      ctx "En concreto, el árbol generado muestra las preguntas que usa el modelo para separar Jedi y Sith."
+      ctx "Lo que explica: cada bifurcación compara una feature con un umbral y cada hoja termina en una predicción."
+      ctx "Los colores ayudan a ver la clase dominante y si las muestras de una zona están mezcladas."
+      ctx "Es algo así como un cuestionario: cada respuesta dirige por una rama hasta llegar a una decisión final."
+      ;;
+    ex05)
+      ctx "En concreto, la curva generada muestra cómo cambian precision y F1 al probar distintos valores de k."
+      ctx "Lo que explica: k es el número de vecinos consultados para clasificar cada muestra."
+      ctx "El mejor k busca un equilibrio: pocos vecinos pueden ser inestables y demasiados pueden suavizar demasiado la decisión."
+      ctx "Es algo así como pedir consejo: una sola opinión puede engañar; preguntar a todo el barrio puede ocultar el caso particular."
+      ;;
+    ex06)
+      ctx "En concreto, EX06 no genera un PNG: la salida obtenida son las predicciones del Voting Classifier en Voting.txt."
+      ctx "Lo que explica: tres modelos analizan cada muestra y sus decisiones se combinan para clasificar Jedi o Sith."
+      ctx "La calidad final se comprueba después comparando Voting.txt con Truth_Knight mediante la matriz de confusión."
+      ctx "Es algo así como consultar a tres jueces: la decisión conjunta intenta ser más sólida que una sola opinión."
+      ;;
+  esac
+}
+
+continue_after_output() {
+  local key="$1"
+  echo
+  read -r -p "  Pulsar intro para continuar con $key… " _
+  header
+  note "Continuación de la defensa de $key (la pantalla anterior se ha limpiado)."
+}
 
 pause() {
   echo
@@ -209,6 +312,7 @@ dynamic_check() {
   local pat line_no line code_hits=0
   for pat in "${patterns[@]}"; do
     while IFS= read -r hit; do
+      [[ "$code_hits" -ge 4 ]] && break 2
       line_no="${hit%%:*}"
       line="${hit#*:}"
       [[ "$line" =~ ^[[:space:]]*# ]] && continue
@@ -221,6 +325,7 @@ dynamic_check() {
 
   if [[ "$code_hits" -gt 0 ]]; then
     ok "El código contiene lógica alineada con el criterio"
+    [[ "$code_hits" -eq 4 ]] && note "Se muestran como máximo cuatro líneas representativas."
   else
     warn "No se localizaron patrones claros (revisad el código juntos a mano)"
   fi
@@ -242,15 +347,25 @@ run_py() {
 
   case "$mode" in
     auto)
+      local output
       clear 2>/dev/null || true
       header
       section "Ejecución automática · $key"
       matplotlib_env
       note "MPLCONFIGDIR=${MPLCONFIGDIR:-} (evita llenar ~/.cache en 42)"
       show_cmd "cd $SCRIPT_DIR/$dir && MPLBACKEND=Agg python3 $base $args"
-      if (cd "$SCRIPT_DIR/$dir" && matplotlib_env && MPLBACKEND=Agg python3 "$base" $args); then
+      if output="$(
+        cd "$SCRIPT_DIR/$dir" &&
+          matplotlib_env &&
+          MPLBACKEND=Agg python3 "$base" $args 2>&1
+      )"; then
         ok "Ejecución de $base terminó con código 0"
+        show_output "Salida del ejercicio (resumen)" "$output"
+        show_pngs "$dir"
+        explain_output "$dir"
+        continue_after_output "$key"
       else
+        show_output "Salida del ejercicio (últimas pistas)" "$output"
         fail "Ejecución de $base falló (código ≠ 0)"
       fi
       ;;
@@ -266,8 +381,11 @@ run_py() {
       show_cmd "export MPLCONFIGDIR=\$HOME/goinfre/.cache/matplotlib; mkdir -p \"\$MPLCONFIGDIR\""
       show_cmd "MPLBACKEND=Agg python3 $base $args"
       echo
-      note "Cuando hayáis ejecutado y visto la salida, Enter…"
-      read -r -p "  " _
+      note "Cuando hayáis ejecutado y visto la salida:"
+      read -r -p "  Pulsar intro para continuar… " _
+      show_pngs "$dir"
+      explain_output "$dir"
+      continue_after_output "$key"
       if ask_yes_no "¿La ejecución manual de $key fue correcta?"; then
         ok "$key marcado como ejecutado OK"
       else
@@ -278,6 +396,34 @@ run_py() {
       warn "Ejecución de $key omitida"
       ;;
   esac
+}
+
+run_confusion_check() {
+  local label="$1"
+  local pred="$2"
+  local truth="$3"
+  local output
+  local display_pred display_truth
+
+  display_pred="${pred#"$SCRIPT_DIR"/}"
+  display_truth="${truth#"$SCRIPT_DIR"/}"
+  show_cmd "cd ex00 && MPLBACKEND=Agg python3 ./Confusion_Matrix.py \"$display_pred\" \"$display_truth\""
+  if output="$(
+    cd "$SCRIPT_DIR/ex00" &&
+      matplotlib_env &&
+      python3 Confusion_Matrix.py "$pred" "$truth" 2>&1
+  )"; then
+    LAST_COMMAND_OUTPUT="$output"
+    show_output "Salida de $label (resumen)" "$output"
+    ok "$label: ejecución correcta (código 0)"
+    note "Lectura: diagonal = aciertos; fuera de la diagonal = predicciones confundidas."
+    return 0
+  fi
+
+  LAST_COMMAND_OUTPUT="$output"
+  show_output "Salida de $label (últimas pistas)" "$output"
+  fail "$label: Confusion_Matrix falló"
+  return 1
 }
 
 # ============================================================================
@@ -364,7 +510,7 @@ check_ex00() {
   fi
 
   # Localizar ficheros de prueba
-  local pred truth pred_e truth_e
+  local pred truth pred_e truth_e demo_output eval_output
   pred="$(find_data predictions.txt 2>/dev/null || find_data predictions.csv 2>/dev/null || true)"
   truth="$(find_data truth.txt 2>/dev/null || find_data truth.csv 2>/dev/null || true)"
   pred_e="$(find_data predictions_eval.txt 2>/dev/null || find_data prediction_eval.csv 2>/dev/null || true)"
@@ -372,11 +518,11 @@ check_ex00() {
 
   subsection "1ª ejecución (ejemplo del subject)"
   if [[ -n "$pred" && -n "$truth" ]]; then
-    # Pasar rutas relativas o absolutas que el script acepte
-    run_py "EX00-demo" "$script" "\"$pred\" \"$truth\""
+    run_confusion_check "EX00-demo" "$pred" "$truth"
+    demo_output="${LAST_COMMAND_OUTPUT:-}"
   else
     warn "Faltan predictions/truth de ejemplo — ejecución manual con los del subject"
-    show_cmd "cd ex00 && python3 Confusion_Matrix.py ../data/predictions.txt ../data/truth.txt"
+    show_cmd "cd ex00 && MPLBACKEND=Agg python3 ./Confusion_Matrix.py ../data/predictions.txt ../data/truth.txt"
   fi
 
   subsection "2ª ejecución (eval – debe CAMBIAR el resultado)"
@@ -385,22 +531,23 @@ check_ex00() {
   ctx "  Sith  precision≈0.49 recall≈0.62 f1≈0.55 total 45"
   ctx "  accuracy ≈ 0.54 · matriz [[26 29],[17 28]]"
   if [[ -n "$pred_e" && -n "$truth_e" ]]; then
-    run_py "EX00-eval" "$script" "\"$pred_e\" \"$truth_e\""
+    run_confusion_check "EX00-eval" "$pred_e" "$truth_e"
+    eval_output="${LAST_COMMAND_OUTPUT:-}"
+    if [[ -n "${demo_output:-}" && -n "${eval_output:-}" && "$demo_output" != "$eval_output" ]]; then
+      ok "EX00: el resultado de la segunda prueba cambia respecto al ejemplo"
+    elif [[ -n "${demo_output:-}" && -n "${eval_output:-}" ]]; then
+      fail "EX00: la segunda prueba no cambia el resultado"
+    fi
   else
     warn "Faltan predictions_eval / truth_eval — el evaluado debe usar los de Intra"
-    show_cmd "python3 Confusion_Matrix.py predictions_eval.txt truth_eval.txt"
+    show_cmd "cd ex00 && MPLBACKEND=Agg python3 ./Confusion_Matrix.py ../data/predictions_eval.txt ../data/truth_eval.txt"
   fi
 
   subsection "Demostración visual"
-  ctx "Debe verse la matriz (print + imagen). Abrir PNG si existe:"
-  local png
-  png="$(find "$SCRIPT_DIR/ex00" -name '*confusion*' -o -name '*.png' 2>/dev/null | head -1)"
-  if [[ -n "$png" ]]; then
-    ok "Imagen: $png"
-    show_cmd "xdg-open \"$png\""
-  else
-    note "Si no hay PNG, la ventana o el print de la matriz basta si se ve claro"
-  fi
+  ctx "Debe verse la matriz (print + imagen)."
+  show_pngs "ex00"
+  explain_output "ex00"
+  continue_after_output "EX00"
 
   ask_scale "EX00" \
     "EX00 – ¿Confusion Matrix correcta (cálculos manuales + salida coherente)?"
@@ -613,10 +760,10 @@ check_ex04() {
   cm="$(find_script ex00 Confusion_Matrix.py)"
   if [[ -n "$pred_out" && -n "$truth_k" && -n "$cm" ]]; then
     note "Ejecutad Confusion_Matrix sobre Tree vs Truth_Knight:"
-    show_cmd "python3 $SCRIPT_DIR/$cm \"$pred_out\" \"$truth_k\""
     if ask_yes_no "¿Queréis lanzarlo ahora desde evaluation.sh?"; then
-      matplotlib_env
-      (cd "$SCRIPT_DIR/ex00" && MPLBACKEND=Agg python3 "$(basename "$cm")" "$pred_out" "$truth_k") || warn "Falló la comparación (revisar rutas/formato)"
+      run_confusion_check "EX04 f1" "$pred_out" "$truth_k"
+    else
+      show_cmd "cd ex00 && MPLBACKEND=Agg python3 ./Confusion_Matrix.py \"$pred_out\" \"$truth_k\""
     fi
   else
     warn "Falta Truth_Knight o Confusion_Matrix para el chequeo automático de f1"
@@ -674,10 +821,10 @@ check_ex05() {
   truth_k="$(find_data Truth_Knight.txt 2>/dev/null || true)"
   cm="$(find_script ex00 Confusion_Matrix.py)"
   if [[ -n "$pred_out" && -n "$truth_k" && -n "$cm" ]]; then
-    show_cmd "python3 $SCRIPT_DIR/$cm \"$pred_out\" \"$truth_k\""
     if ask_yes_no "¿Lanzar Confusion_Matrix KNN vs Truth ahora?"; then
-      matplotlib_env
-      (cd "$SCRIPT_DIR/ex00" && MPLBACKEND=Agg python3 "$(basename "$cm")" "$pred_out" "$truth_k") || warn "Falló la comparación"
+      run_confusion_check "EX05 f1" "$pred_out" "$truth_k"
+    else
+      show_cmd "cd ex00 && MPLBACKEND=Agg python3 ./Confusion_Matrix.py \"$pred_out\" \"$truth_k\""
     fi
   fi
 
@@ -753,10 +900,10 @@ check_ex06() {
   truth_k="$(find_data Truth_Knight.txt 2>/dev/null || true)"
   cm="$(find_script ex00 Confusion_Matrix.py)"
   if [[ -n "$pred_out" && -n "$truth_k" && -n "$cm" ]]; then
-    show_cmd "python3 $SCRIPT_DIR/$cm \"$pred_out\" \"$truth_k\""
     if ask_yes_no "¿Lanzar Confusion_Matrix Voting vs Truth ahora?"; then
-      matplotlib_env
-      (cd "$SCRIPT_DIR/ex00" && MPLBACKEND=Agg python3 "$(basename "$cm")" "$pred_out" "$truth_k") || warn "Falló la comparación"
+      run_confusion_check "EX06 f1" "$pred_out" "$truth_k"
+    else
+      show_cmd "cd ex00 && MPLBACKEND=Agg python3 ./Confusion_Matrix.py \"$pred_out\" \"$truth_k\""
     fi
   fi
 

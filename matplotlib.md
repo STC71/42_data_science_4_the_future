@@ -1,7 +1,7 @@
 # 📈 Matplotlib en el Module 4 – The future
 
 <p align="center">
-  <img src="./imgs/banner_00.jpg" alt="Piscine Data Science – Module 4 – Guía Matplotlib" width="100%">
+  <img src="./imgs/banner_matplotlib.jpg" alt="Piscine Data Science – Module 4 – Guía Matplotlib" width="100%">
 </p>
 
 [← README](./README.md) · [🐍 python.md](./python.md) · [🐼 pandas.md](./pandas.md) · [🔢 numpy.md](./numpy.md) · [🤖 scikit-learn.md](./scikit-learn.md) · [📐 mates.md](./mates.md)
@@ -47,6 +47,11 @@ No sustituye los `ex0N/python.md`.
 | ¿Obligatorio matplotlib? | El subject pide **ver** resultados; esta es la librería del repo. |
 | ¿Siempre ventana? | En cluster: **PNG** + visor suele bastar. |
 | ¿EX03 dibuja? | Puede centrarse en el print de VIF; otros EX sí grafican. |
+
+> **Salida legible durante la defensa:** `evaluation.sh` resume automáticamente las
+> salidas de terminal demasiado largas (por ejemplo, tablas o matrices). No oculta
+> el resultado de la prueba ni modifica el PNG; muestra las líneas más útiles y
+> conserva el comando para repetir la ejecución completa manualmente.
 
 [↑ Índice](#indice)
 

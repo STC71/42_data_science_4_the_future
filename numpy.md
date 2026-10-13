@@ -1,7 +1,7 @@
 # 🔢 NumPy en el Module 4 – The future
 
 <p align="center">
-  <img src="./imgs/banner_00.jpg" alt="Piscine Data Science – Module 4 – Guía NumPy" width="100%">
+  <img src="./imgs/banner_numpy.jpg" alt="Piscine Data Science – Module 4 – Guía NumPy" width="100%">
 </p>
 
 [← README](./README.md) · [🐍 python.md](./python.md) · [🐼 pandas.md](./pandas.md) · [📈 matplotlib.md](./matplotlib.md) · [🤖 scikit-learn.md](./scikit-learn.md) · [📐 mates.md](./mates.md)
