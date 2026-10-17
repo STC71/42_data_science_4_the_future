@@ -230,9 +230,11 @@ def main(argv: list[str] | None = None) -> int:
     X_test = load_test(test_arg, names)
     X_test_s = scaler.transform(X_test)
     y_test_pred = final.predict(X_test_s)
-    out_txt = SCRIPT_DIR / "KNN.txt"
-    out_txt.write_text("\n".join(map(str, y_test_pred)) + "\n", encoding="utf-8")
-    print(f"→ KNN.txt: {out_txt}  ({len(y_test_pred)} líneas)")
+    body = "\n".join(map(str, y_test_pred)) + "\n"
+    for out_name in ("KNN.txt", "KNN.csv"):
+        out_path = SCRIPT_DIR / out_name
+        out_path.write_text(body, encoding="utf-8")
+        print(f"→ {out_name}: {out_path}  ({len(y_test_pred)} líneas)")
     print("Proceso terminado.")
     return 0
 

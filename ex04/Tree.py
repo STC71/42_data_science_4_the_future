@@ -14,10 +14,10 @@ SUBJECT (Forest)
   • Decision Tree Classifier or Random Forest Classifier
   • Display the tree in a graph
   • Args: Train_knight.csv  Test_knight.csv
-  • Write Tree.txt (one prediction per line: Jedi or Sith)
-  • Minimum 90% f1-score
+  • Write Tree.txt (and Tree.csv) — one prediction per line: Jedi or Sith
+  • Minimum 90% f1-score (macro; medido en Validation y comprobable vs Truth_Knight)
 
-  Preferible medir f1 con Training/Validation del módulo 3.
+  Preferible Training/Validation del módulo 3 si existen en data/.
 """
 
 from __future__ import annotations
@@ -51,12 +51,13 @@ for _mod, _pkg in (
 
 import matplotlib
 
-if os.environ.get("DISPLAY", "") == "":
+if os.environ.get("DISPLAY", "") == "" or os.environ.get("MPLBACKEND") == "Agg":
     matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, f1_score
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 
@@ -113,6 +114,58 @@ def load_test(path: Path, feature_names: list[str]) -> pd.DataFrame:
     return X[feature_names]
 
 
+def candidate_models():
+    """
+    Varias configuraciones (árbol y bosque). Elegimos la de mejor f1 macro
+    en validación — idea tomada de enfoques simples, sin tirar la nuestra.
+    """
+    return [
+        (
+            "DecisionTree (libre)",
+            DecisionTreeClassifier(random_state=42),
+        ),
+        (
+            "DecisionTree (depth=8, leaf=2)",
+            DecisionTreeClassifier(
+                max_depth=8, min_samples_leaf=2, random_state=42
+            ),
+        ),
+        (
+            "DecisionTree (depth=10, balanced)",
+            DecisionTreeClassifier(
+                max_depth=10,
+                min_samples_leaf=2,
+                class_weight="balanced",
+                random_state=42,
+            ),
+        ),
+        (
+            "RandomForest (100 árboles)",
+            RandomForestClassifier(
+                n_estimators=100,
+                max_depth=12,
+                min_samples_leaf=2,
+                class_weight="balanced",
+                random_state=42,
+                n_jobs=-1,
+            ),
+        ),
+    ]
+
+
+def tree_for_plot(clf, X_fit, y_fit):
+    """
+    El subject pide VER un árbol. Si el modelo ganador es un bosque,
+    dibujamos un DecisionTree entrenado con los mismos datos (misma idea
+    de reglas); si ya es un árbol, usamos ese.
+    """
+    if isinstance(clf, DecisionTreeClassifier):
+        return clf
+    dt = DecisionTreeClassifier(max_depth=6, min_samples_leaf=2, random_state=42)
+    dt.fit(X_fit, y_fit)
+    return dt
+
+
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     if len(argv) < 2:
@@ -156,50 +209,76 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  Features: {len(names)}  |  filas train: {len(X_fit)}")
     print()
 
-    clf = DecisionTreeClassifier(
-        max_depth=5,
-        min_samples_leaf=3,
-        random_state=42,
-        class_weight="balanced",
-    )
-    clf.fit(X_fit, y_fit)
+    # Elegir el modelo con mejor f1 macro en validación
+    print("Candidatos (f1 macro en validación):")
+    best_name = ""
+    best_clf = None
+    best_f1 = -1.0
+    for name, clf in candidate_models():
+        clf.fit(X_fit, y_fit)
+        pred = clf.predict(X_val)
+        f1 = float(
+            f1_score(y_val, pred, average="macro", labels=["Jedi", "Sith"])
+        )
+        mark = ""
+        if f1 > best_f1:
+            best_f1 = f1
+            best_clf = clf
+            best_name = name
+            mark = "  ← mejor"
+        print(f"  {name:40s}  f1={f1 * 100:6.2f} %{mark}")
 
-    y_val_pred = clf.predict(X_val)
-    f1 = float(
-        f1_score(y_val, y_val_pred, average="macro", labels=["Jedi", "Sith"])
-    )
-    print("Validación:")
+    assert best_clf is not None
+    print()
+    print(f"Modelo elegido: {best_name}")
+    y_val_pred = best_clf.predict(X_val)
+    print("Validación (modelo elegido):")
     print(classification_report(y_val, y_val_pred, digits=3))
-    print(f"F1-score (macro): {f1:.4f}  (mínimo subject: {MIN_F1:.0%})")
-    if f1 >= MIN_F1:
-        print("✓ Cumple ≥ 90 % f1-score.")
+    print(f"F1-score (macro): {best_f1:.4f}  (mínimo subject: {MIN_F1:.0%})")
+    if best_f1 >= MIN_F1:
+        print("✓ Cumple ≥ 90 % f1-score en validación.")
     else:
-        print("⚠ Por debajo del 90 %. Ajusta profundidad o usa RandomForest.")
+        print("⚠ Por debajo del 90 % en validación — revisad datos / hiperparámetros.")
     print()
 
+    # Predicciones sobre Test → Tree.txt y Tree.csv (la hoja menciona a veces .csv)
     X_test = load_test(test_arg, names)
-    y_test_pred = clf.predict(X_test)
-    out_txt = SCRIPT_DIR / "Tree.txt"
-    out_txt.write_text("\n".join(map(str, y_test_pred)) + "\n", encoding="utf-8")
-    print(f"→ Tree.txt: {out_txt}  ({len(y_test_pred)} líneas)")
+    y_test_pred = best_clf.predict(X_test)
+    labels = [str(p) for p in y_test_pred]
+    body = "\n".join(labels) + "\n"
+    for out_name in ("Tree.txt", "Tree.csv"):
+        out_path = SCRIPT_DIR / out_name
+        out_path.write_text(body, encoding="utf-8")
+        print(f"→ {out_name}: {out_path}  ({len(labels)} líneas)")
 
+    # Gráfico del árbol (legible; si ganó el bosque, un DT auxiliar)
+    plot_clf = tree_for_plot(best_clf, X_fit, y_fit)
     out_png = SCRIPT_DIR / "tree.png"
-    fig, ax = plt.subplots(figsize=(20, 10))
+    fig, ax = plt.subplots(figsize=(22, 12))
     plot_tree(
-        clf,
-        feature_names=names,
-        class_names=sorted(clf.classes_.astype(str)),
+        plot_clf,
+        feature_names=[str(n) for n in names],
+        class_names=[str(c) for c in sorted(plot_clf.classes_.astype(str))],
         filled=True,
         rounded=True,
-        impurity=True,
+        impurity=False,
+        proportion=True,
         ax=ax,
-        fontsize=7,
+        fontsize=8,
+        max_depth=5,
     )
-    ax.set_title("Decision Tree Classifier – Jedi / Sith")
+    ax.set_title(
+        f"Decision Tree – Jedi / Sith (EX04)\n"
+        f"Modelo usado para predecir: {best_name}"
+    )
+    fig.tight_layout()
     fig.savefig(
-        out_png, dpi=140, bbox_inches="tight", pad_inches=0.2, facecolor="white"
+        out_png, dpi=150, bbox_inches="tight", pad_inches=0.25, facecolor="white"
     )
-    plt.show()
+    try:
+        plt.show()
+    except Exception:
+        pass
     plt.close(fig)
     print(f"→ tree.png: {out_png}")
     print("Proceso terminado.")
