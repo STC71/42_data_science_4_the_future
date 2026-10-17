@@ -121,6 +121,14 @@ note()  { echo -e "    ${DIM}→ $1${RESET}"; }
 ctx()   { echo -e "  ${DIM}$1${RESET}"; }
 ctx_blank() { echo; }
 requirement() { echo -e "    ${BLUE}▸ Criterio (hoja de evaluación):${RESET} $1"; }
+# Frase CLAVE de la hoja/defensa (solo lo crítico, en rojo — no colorear párrafos enteros)
+key() {
+  echo -e "    ${BOLD}${RED}★ $1${RESET}"
+}
+key_req() {
+  # Criterio de la hoja que el evaluador DEBE comprobar / el evaluado DEBE poder responder
+  echo -e "    ${BOLD}${RED}▸ HOJA:${RESET} ${RED}$1${RESET}"
+}
 show_cmd() { echo -e "    ${DIM}\$${RESET} ${BOLD}$1${RESET}"; }
 
 # --- Presentación ligera ---
@@ -202,11 +210,15 @@ list_work_pngs() {
 show_pngs() {
   local dir="$1"
   local found=0 png
+  local do_open="${2:-auto}"   # auto | list  (auto intenta abrir el visor)
   while IFS= read -r png; do
     [[ -z "$png" ]] && continue
     found=1
     ok "PNG: ${png#"$SCRIPT_DIR"/}"
     show_cmd "xdg-open \"$png\""
+    if [[ "$do_open" != "list" ]]; then
+      open_png "$png"
+    fi
   done < <(list_work_pngs "$dir")
   if [[ "$found" -eq 0 ]]; then
     if [[ "$dir" == "ex03" || "$dir" == "ex06" ]]; then
@@ -214,6 +226,28 @@ show_pngs() {
     else
       note "No hay PNG de trabajo en $dir/ (imgs/ se ignora siempre)."
     fi
+  fi
+}
+
+# Abre un PNG en el visor del sistema (si hay DISPLAY / comando disponible).
+# No bloquea la evaluación: se lanza en segundo plano.
+open_png() {
+  local png="$1"
+  [[ -f "$png" ]] || return 0
+  # Sin pantalla gráfica (SSH puro, CI): solo mostrar la ruta
+  if [[ -z "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]]; then
+    tip "Sin DISPLAY: abrid manualmente → $png"
+    return 0
+  fi
+  if command -v xdg-open >/dev/null 2>&1; then
+    xdg-open "$png" >/dev/null 2>&1 &
+    disown 2>/dev/null || true
+    tip "Abriendo gráfico automáticamente (xdg-open)…"
+  elif command -v open >/dev/null 2>&1; then
+    open "$png" >/dev/null 2>&1 &
+    disown 2>/dev/null || true
+  else
+    tip "No hay xdg-open: abrid a mano → $png"
   fi
 }
 
@@ -258,6 +292,7 @@ expect_work_png() {
   if [[ -n "$png" ]]; then
     ok "Gráfico ($desc): ${png#"$SCRIPT_DIR"/}"
     show_cmd "xdg-open \"$png\""
+    open_png "$png"
     tip "La hoja pide: «a graph must appear as in the subject» y explicar qué se ve."
     return 0
   fi
@@ -910,10 +945,10 @@ check_ex00() {
   tip "sklearn.metrics NO debe calcular las cifras (solo dibujo de la matriz OK)."
   tip "La hoja exige DOS ejecuciones: ejemplo del subject + ficheros eval (resultado distinto)."
   ctx_blank
-  requirement "Run ./Confusion_Matrix.* prediction truth — comparar con el subject"
-  requirement "Run con prediction_eval / truth_eval — el resultado debe cambiar"
+  key_req "Run ./Confusion_Matrix.* prediction truth — comparar con el subject"
+  key_req "Run con prediction_eval / truth_eval — el resultado debe cambiar"
   requirement "Salida tipo: precision, recall, f1-score, accuracy + matriz [[…]]"
-  requirement "No lib excepto para mostrar la imagen; cálculos manuales"
+  key_req "Cálculos MANUALES (sin fiarse solo de la lib) + imagen de la matriz"
   ctx_blank
 
   local script
@@ -1008,9 +1043,9 @@ check_ex00() {
   # --- Surprise evaluation EX00 ---
   section "1b · ⚡ EX00 – Evaluación sorpresa (conceptos)"
 
-  requirement "Explicar: Precision, Recall, F1-score, Accuracy"
-  requirement "Mostrar en la matriz las 4 cajas: TP, TN, FP, FN y explicarlas"
-  requirement "Quitar 1 punto por cada respuesta incorrecta (0–5)"
+  key_req "Explicar oralmente: Precision, Recall, F1-score, Accuracy"
+  key_req "Señalar en la matriz las 4 cajas: TP, TN, FP, FN y explicarlas"
+  key_req "Nota sorpresa 0–5: −1 por cada respuesta incorrecta"
   ctx_blank
 
   tip "Parte ORAL. Lo de abajo es el guion del evaluador: qué preguntar y qué se espera oír."
@@ -1157,8 +1192,8 @@ check_ex01() {
   idea "están muy relacionadas. El heatmap pinta esas relaciones en colores."
   tip "La hoja pide: ejecutar el programa, VER el gráfico y explicar colores claros vs oscuros."
   ctx_blank
-  requirement "Run the program; graph as in the subject"
-  requirement "Student explains light vs dark colors"
+  key_req "Ejecutar el programa → debe aparecer un gráfico como en el subject"
+  key_req "El evaluado explica colores claros vs oscuros del heatmap"
   ctx_blank
 
   local script
@@ -1223,7 +1258,7 @@ check_ex02() {
   tip "La hoja pide el gráfico y que el evaluado explique qué representa la curva."
   ctx_blank
   requirement "Run; graph as in the subject"
-  requirement "Student explains the representation of the curve"
+  key_req "El evaluado explica la curva de varianza (~90 % info)"
   ctx_blank
 
   local script
@@ -1368,9 +1403,9 @@ check_ex03() {
   tip "EX03 NO genera PNG: la salida es una tabla en terminal (es normal)."
   tip "La explicación completa del VIF (fórmula + umbrales) está en la defensa oral más abajo."
   ctx_blank
-  requirement "Display VIF of the data"
-  requirement "Explain VIF"
-  requirement "Keep only características so VIF < 5"
+  key_req "Mostrar el VIF de los datos en terminal"
+  key_req "Explicar qué es el VIF (oral)"
+  key_req "Conservar solo features con VIF < 5"
   ctx_blank
 
   local script
@@ -1444,10 +1479,10 @@ check_ex04() {
   ctx "La hoja exige f1 ≥ 90 % al comparar con Truth_Knight usando Confusion_Matrix."
   idea "Analogía: un cuestionario médico — cada pregunta sí/no te lleva por un camino hasta un diagnóstico."
   ctx_blank
-  requirement "./Tree.* Train_knight.csv Test_knight.csv"
-  requirement "Graph as in the subject; student explains the tree"
-  requirement "Tree.csv/txt created"
-  requirement "Confusion_Matrix con Tree + Truth_Knight → f1 ≥ 90 %"
+  key_req "./Tree.* Train_knight.csv Test_knight.csv"
+  key_req "Gráfico del árbol + explicación de las reglas"
+  key_req "Debe existir Tree.csv o Tree.txt"
+  key_req "Confusion_Matrix Tree + Truth_Knight → f1 ≥ 90 %"
   ctx_blank
 
   local script
@@ -1489,6 +1524,8 @@ check_ex04() {
   if [[ -n "$tree_png" ]]; then
     ok "Árbol en imagen: ${tree_png#"$SCRIPT_DIR"/}"
     show_cmd "xdg-open \"$tree_png\""
+    open_png "$tree_png"
+    open_png "$tree_png"
     tip "El evaluado debe explicar 1–2 nodos (skill + umbral) y una hoja Jedi/Sith."
   else
     fail "No hay tree.png (PNG de trabajo) en ex04/"
@@ -1553,8 +1590,8 @@ check_ex05() {
   idea "«¿esto es zona Jedi o Sith?» — si k=1 una sola opinión puede engañar; si k es enorme, se diluye todo."
   tip "Después hay una sorpresa oral sobre «convergencia» (qué es y cuándo falla)."
   ctx_blank
-  requirement "./KNN.* Train Test → gráfico + KNN.txt/csv"
-  requirement "Confusion_Matrix KNN + Truth_Knight → f1 ≥ 92 %"
+  key_req "./KNN.* Train Test → gráfico k + KNN.txt/csv"
+  key_req "Confusion_Matrix KNN + Truth_Knight → f1 ≥ 92 %"
   ctx_blank
 
   local script
@@ -1646,7 +1683,7 @@ check_ex05() {
 
   section "6b · ⚡ EX05 – Evaluación sorpresa (convergencia)"
 
-  requirement "Explain what convergence is and when it may not happen"
+  key_req "Sorpresa: explicar convergencia y cuándo puede fallar"
   ctx_blank
   tip "Parte oral. El texto siguiente es guion para el evaluador / para ayudar al evaluado."
   echo
@@ -1706,8 +1743,8 @@ check_ex06() {
   idea "aportan información complementaria."
   tip "EX06 no exige PNG; lo importante es el fichero de predicciones y el f1."
   ctx_blank
-  requirement "Read code + ./democracy.* Train Test → Voting.txt/csv"
-  requirement "Confusion_Matrix Voting + Truth_Knight → f1 ≥ 94 %"
+  key_req "./democracy.* Train Test → Voting.txt o Voting.csv"
+  key_req "Confusion_Matrix Voting + Truth_Knight → f1 ≥ 94 %"
   ctx_blank
 
   local script
@@ -1832,7 +1869,7 @@ summary() {
 
   echo -e "  ${BOLD}Umbrales de la hoja (recordatorio)${RESET}"
   echo -e "  ${DIM}────────────────────────────────────────────────────────${RESET}"
-  ctx "  EX04 Forest  → f1 ≥ 90 %   |  EX05 KNN → f1 ≥ 92 %   |  EX06 Voting → f1 ≥ 94 %"
+  key "Umbrales hoja: EX04 f1≥90 %  ·  EX05 f1≥92 %  ·  EX06 f1≥94 %"
   ctx "  EX01/02/04/05 → gráfico visible y explicado (EX03 y EX06: sin PNG obligatorio)."
   echo
 
